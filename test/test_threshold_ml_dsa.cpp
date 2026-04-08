@@ -32,7 +32,7 @@ int main() {
     snprintf(reinterpret_cast<char *>(ctx.data()), CTX_LENGTH, "test_dilithium");
 
     constexpr std::size_t MESSAGE_LENGTH{59};
-    std::array<uint8_t, MESSAGE_LENGTH + DILITHIUM_CRYPTO_BYTES> message{}; // todo
+    std::array<uint8_t, MESSAGE_LENGTH + DILITHIUM_CRYPTO_BYTES> message{};
 
 
     const otpqc::math::Number<> modulus{DILITHIUM_Q};

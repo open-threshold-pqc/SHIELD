@@ -22,7 +22,6 @@ if (NOT GMP_INCLUDE_DIR OR NOT GMP_LIBRARY OR NOT GMPXX_LIBRARY)
     message(FATAL_ERROR "Could not find GMP and/or GMPXX")
 endif()
 
-# todo remove this line
 link_libraries(gmp gmpxx)
 
 

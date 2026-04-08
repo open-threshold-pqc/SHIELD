@@ -23,7 +23,6 @@ namespace otpqc::threshold_signatures::dilithium::poly {
         /* Convert number of ones from arithmetic sharing to boolean sharing */
         auto number_of_ones_bool_share = mpc::protocols::ShareConversion<>::a2y(party, number_of_ones);
 
-        //todo error when using bits_be_ze(11) directly on share:
         //   what():  [Math::Number::bits_le_ze] Bit length must be at least the size of the number
         auto bits = number_of_ones_bool_share.get_share().bits_be_ze(DILITHIUM_Q_BITLEN);
         std::vector<bool> circuit_input(11);

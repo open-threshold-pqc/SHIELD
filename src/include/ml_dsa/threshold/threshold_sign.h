@@ -157,7 +157,7 @@ namespace otpqc::threshold_signatures::dilithium {
                                                   poly::PolynomialVectorShare<> &t0, const int temp_nonce,
                                                   std::tuple<std::array<uint8_t, DILITHIUM_CTILDEBYTES>, polyvecl,
                                                       polyveck> &signature, bool &res_batch_check) {
-        using namespace otpqc::threshold_signatures::dilithium::poly; //todo
+        using namespace otpqc::threshold_signatures::dilithium::poly;
 
         /* Computing rho'' = H(K || rnd || mu) */
         std::array<uint8_t, DILITHIUM_CRHBYTES> rhoprime{};

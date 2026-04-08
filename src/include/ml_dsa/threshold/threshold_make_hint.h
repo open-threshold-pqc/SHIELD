@@ -39,7 +39,7 @@ namespace otpqc::threshold_signatures::dilithium::poly {
             number_of_ones <<= 1;
             number_of_ones |= result[i];
         }
-        std::array<int, DILITHIUM_N> poly_hint{};   //todo somehow mention these are bools shares?
+        std::array<int, DILITHIUM_N> poly_hint{};
         for (int i=8; i<result.size();i++)
             poly_hint[i-8] = result[i];
         return std::make_tuple(number_of_ones, poly_hint);

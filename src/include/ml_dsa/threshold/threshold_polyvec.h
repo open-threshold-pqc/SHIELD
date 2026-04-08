@@ -75,7 +75,6 @@ namespace otpqc::threshold_signatures::dilithium::poly {
      * \param pv Polynomial vector (L)
      * \return Resulting polynomial vector (K)
      */
-    //todo change K L and make dynamic
     template<otpqc::math::IntegralNumeric T = QST_UNDERLYING_NUMERIC_TYPE>
     PolynomialVectorShare<T> threshold_matrix_product_vector(const PolynomialMatrixShare<T> &mat,
                                                              const PolynomialVectorShare<T> &pv) {

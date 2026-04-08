@@ -82,7 +82,6 @@ namespace otpqc::math {
      * Common promotion type trait which given two types, returns the promoted type that includes the both.
      * If any of two types is GMP, the common type is GMP. Otherwise, the we use std::common_type for primitve types.
      */
-    //todo Does it cover all the cases
     template<Numeric T, Numeric U>
     struct PromotedCommonHelper {
         using type = std::conditional_t<
@@ -124,10 +123,9 @@ namespace otpqc::math {
             if constexpr (GmpNumeric<T>)
                 m_value = mpz_class(v);
             else
-                m_value = static_cast<T>(v); //todo Is this conversion suitable?
+                m_value = static_cast<T>(v);
         }
 
-        //todo fails for floating point values
         explicit Number(const std::vector<uint8_t> &bytes) {
             if constexpr (PrimitiveNumeric<T>) {
                 if (bytes.size() > sizeof(T))
@@ -315,7 +313,7 @@ namespace otpqc::math {
             std::vector<bool> bits;
 
             if (m_value == 0) {
-                bits.push_back(false); //todo For 0, we need at least 1 bit
+                bits.push_back(false);
                 return bits;
             }
 
@@ -346,7 +344,7 @@ namespace otpqc::math {
             if (bit_length < static_cast<int>(bits.size()))
                 throw std::invalid_argument(
                     "[Math::Number::bits_le_se] Bit length must be at least the size of the number");
-            const bool signed_bit = m_value < 0 ? true : false; //todo Our method could not infer sign from last bit!
+            const bool signed_bit = m_value < 0 ? true : false;
             bits.resize(bit_length, signed_bit);
             return bits;
         }
@@ -362,7 +360,7 @@ namespace otpqc::math {
             if (bit_length < static_cast<int>(bits.size()))
                 throw std::invalid_argument(
                     "[Math::Number::bits_le_ze] Bit length must be at least the size of the number");
-            bits.resize(bit_length, false); //todo Our method could not infer sign from last bit!
+            bits.resize(bit_length, false);
             return bits;
         }
 
@@ -408,7 +406,6 @@ namespace otpqc::math {
          * \param bit_length Desired bit length
          * \return Random number
          */
-        //todo This does not generate negative numbers if bit_length in positive range of target type (e.g., 14-bit in int)
         static Number random(const int bit_length)
             requires (IntegralNumeric<T>) {
             if (bit_length <= 0)

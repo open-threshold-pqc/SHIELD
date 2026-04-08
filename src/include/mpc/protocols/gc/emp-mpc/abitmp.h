@@ -169,7 +169,6 @@ class ABitMP {
 		}
 		delete[] tmp;
 		vector<future<bool>> res;
-		//TODO: they should not need to send MACs.	
 		for(int i = 1; i <= nP; ++i) for(int j = 1; j<= nP; ++j) if( (i < j) and (i == party or j == party) ) {
 			int party2 = i + j - party;
 			res.push_back(pool->enqueue([this, Ms, bs, party2]()->bool {

@@ -39,7 +39,7 @@ namespace otpqc::threshold_signatures::dilithium {
 
         unpack_sk(rho_buffer, tr_buffer, key_buffer, &t0, &s1, &s2, sk.get());
 
-        /* Convert ML-DSA's primitive polyveck polynomials to our Constant Polynomial type */ //todo combine
+        /* Convert ML-DSA's primitive polyveck polynomials to our Constant Polynomial type */
         const auto t0_constant_poly = poly::utils::polyveck_to_polynomial_vector_share(&t0);
         const auto s1_constant_poly = poly::utils::polyvecl_to_polynomial_vector_share(&s1);
         const auto s2_constant_poly = poly::utils::polyveck_to_polynomial_vector_share(&s2);

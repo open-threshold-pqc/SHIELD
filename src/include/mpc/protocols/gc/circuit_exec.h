@@ -75,7 +75,6 @@ namespace otpqc::mpc::protocols::gc::circuit {
                 execution_input[gc_function.input1_size + i] = input2->at(gc_function.input2_size - 1 - i);
         }
 
-        //todo We need optimization
         if (gc_function.operation == GC_FUNCTION_CODE::KECCAK_F_PERMUTATION_1600_1600) {
             for (int i = 0; i < gc_function.input1_size; i++)
                 execution_input[i] = input1->at(i);

@@ -83,7 +83,6 @@ namespace otpqc::mpc::sharing {
             return *this;
         }
 
-        //todo Write this as a generic operator overloaded with class templates
         friend ArithmeticSharing operator+(int lhs, const ArithmeticSharing& rhs) {
             otpqc::math::Number<T> lhs_number{lhs};
             return ArithmeticSharing(
@@ -139,7 +138,6 @@ namespace otpqc::mpc::sharing {
             return *this;
         }
 
-        //todo Write this as a generic operator overloaded with class templates
         friend ArithmeticSharing operator*(int lhs, const ArithmeticSharing& rhs) {
             otpqc::math::Number<T> lhs_number{lhs};
             return ArithmeticSharing(
@@ -225,7 +223,6 @@ namespace otpqc::mpc::sharing {
                                                                                                           total) % modulus);
             return shares;
 
-            //todo mac shares!!
         }
 
         static std::vector<otpqc::math::Number<T>> generate_random_global_key_shares(const otpqc::math::Number<T> &modulus, const otpqc::math::Number<T> &key,

@@ -25,7 +25,6 @@ namespace otpqc::threshold_signatures::utils {
             byte_array_shares.emplace_back(std::make_unique<uint8_t[]>(byte_array_length));
 
         /* Generate boolean shares for each byte */
-        //todo improve by packing more (upto sizeof(base)) |= for number class
         for (int i = 0; i < byte_array_length; ++i) {
             math::Number<> input_byte{byte_array[i]};
             auto shares = mpc::sharing::BooleanSharing<>::generate_random_shares(

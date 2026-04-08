@@ -88,12 +88,12 @@ namespace otpqc::mpc::sharing {
         }
 
         [[nodiscard]] std::vector<bool> bits_le() const {
-            auto bits = m_share.bits_le_ze(m_bit_length);   //todo We don't know whether this number is positive or not
+            auto bits = m_share.bits_le_ze(m_bit_length);
             return bits;
         }
 
         [[nodiscard]] std::vector<bool> bits_be() const {
-            auto bits = m_share.bits_be_ze(m_bit_length); //todo We don't know whether this number is positive or not
+            auto bits = m_share.bits_be_ze(m_bit_length);
             return bits;
         }
 

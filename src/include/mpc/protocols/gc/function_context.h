@@ -10,7 +10,7 @@ namespace otpqc::mpc::protocols::gc::circuit {
      */
     struct GCFunctionContext {
         GC_FUNCTION_CODE operation;
-        CMPC<QST_NUM_OF_MPC_PARTIES> *mpc_gc; //todo
+        CMPC<QST_NUM_OF_MPC_PARTIES> *mpc_gc;
         int input1_size;
         int input2_size;
         int output_size;

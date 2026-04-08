@@ -1,4 +1,3 @@
-//TODO: check MACs
 #ifndef FPRE_MP_H__
 #define FPRE_MP_H__
 #include <emp-tool/emp-tool.h>
@@ -324,7 +323,6 @@ class FpreMP { public:
 		delete[] s[0];
 	}
 
-	//TODO: change to justGarble
 	uint8_t garble(block * KEY, bool * r, bool * r2, int i, int I) {
 		uint8_t data = 0;
 		block tmp[4], tmp2[4], tmpH[4];

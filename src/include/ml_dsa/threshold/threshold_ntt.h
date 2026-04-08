@@ -62,7 +62,7 @@ namespace otpqc::threshold_signatures::dilithium::threshold_NTT{
      **************************************************/
     template<otpqc::math::IntegralNumeric T = QST_UNDERLYING_NUMERIC_TYPE>
     void threshold_ntt(poly::PolynomialShare<T> &a) {
-        using namespace poly; //todo
+        using namespace poly;
 
         if (std::holds_alternative<poly::PolyCoeffConstantShare<T>>(a[0])) {
             throw std::invalid_argument("[NTT] Input coefficients must be MPC shares, not constant shares.");
@@ -105,7 +105,7 @@ namespace otpqc::threshold_signatures::dilithium::threshold_NTT{
      **************************************************/
     template<otpqc::math::IntegralNumeric T = QST_UNDERLYING_NUMERIC_TYPE>
     void threshold_invntt(poly::PolynomialShare<T> &a) {
-        using namespace poly; //todo
+        using namespace poly;
 
         if (std::holds_alternative<poly::PolyCoeffConstantShare<T>>(a[0])) {
             throw std::invalid_argument("[INVNTT] Input coefficients must be MPC shares, not constant shares.");

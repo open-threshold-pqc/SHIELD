@@ -82,10 +82,8 @@ namespace otpqc::mpc {
                 circuit_file_name = "Dilithium/HintOneComparison/dilithium5_hint_one_comparison.txt";
             else
                 throw std::invalid_argument("[MPC::GC::create_circuit] Given operation is not supported");
-            //todo add op name
 
             for (int i = 0; i < count; i++) {
-                //todo Memory leakage here!
                 const auto circuit_bf = new BristolFormat(
                     (std::string(GC_BRISTOL_CIRCUITS_BASE_PATH) + "/" + circuit_file_name).c_str());
 

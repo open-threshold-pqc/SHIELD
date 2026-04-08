@@ -18,7 +18,7 @@
 * Returns 0 (success)
 **************************************************/
 int crypto_sign_keypair(uint8_t *pk, uint8_t *sk) {
-    uint8_t seedbuf[2 * DILITHIUM_SEEDBYTES + DILITHIUM_CRHBYTES] = {}; //todo
+    uint8_t seedbuf[2 * DILITHIUM_SEEDBYTES + DILITHIUM_CRHBYTES] = {};
     uint8_t tr[DILITHIUM_TRBYTES];
     const uint8_t *rho, *rhoprime, *key;
     polyvecl mat[DILITHIUM_K];

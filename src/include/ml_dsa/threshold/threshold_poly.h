@@ -295,12 +295,9 @@ namespace otpqc::threshold_signatures::dilithium::poly {
             /* Creating a boolean share from each extracted coefficient for Y2A conversion */
             auto coeff_boolean_share = otpqc::mpc::sharing::BooleanSharing<T>{otpqc::math::Number<T>{coeff}, DILITHIUM_Q_BITLEN};
 
-            //todo Changqi
-
             /* To have (Gamma1 - coeff) shares:
              * Party 1 computes (Gamma1 - [coeff1]) while others compute 0-[coeffi] as their shares.
              */
-            //todo optimize this step by adding functionality to Arithmetic sharing!
             const auto &mac_key_share = party.get_mpc_context().get_global_mac_key_share();
             if (party.get_id() == 1) {
                 auto coeff_arithmetic_share =

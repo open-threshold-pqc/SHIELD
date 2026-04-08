@@ -67,7 +67,7 @@ namespace otpqc::mpc::protocols {
                 auto share_byte_array = x_min_r_share.get_share().linearized();
                 const int share_byte_len{static_cast<int>(share_byte_array.size())};
 
-                io->send_data(1, &share_byte_len, sizeof(int)); //todo optimization of sending 4 bytes for length?
+                io->send_data(1, &share_byte_len, sizeof(int));
                 io->send_data(1, share_byte_array.data(), share_byte_len);
                 io->flush();
 
@@ -91,7 +91,7 @@ namespace otpqc::mpc::protocols {
                 /* Create an accumulator to add shares received from other parties */
                 sharing::ArithmeticSharing x_min_r_value = x_min_r_share;
 
-                std::vector<uint8_t> byte_buffer(100); //todo optimization
+                std::vector<uint8_t> byte_buffer(100);
 
                 /* Receiving [[x-r]] share from all other parties to construct the x-r */
                 for (int i = 2; i <= QST_NUM_OF_MPC_PARTIES; i++) {
@@ -125,7 +125,7 @@ namespace otpqc::mpc::protocols {
             }
 
             /* Run MPC Circuit addition */
-            std::vector<bool> circuit_output; //todo Write this better
+            std::vector<bool> circuit_output;
             if (dabit_bit_length == 23) {
                 auto circuit = party.get_mpc_context().get_registered_circuit(
                     GC_FUNCTION_CODE::UNSIGNED_ADD_MOD_8380417_23_23_23);
@@ -181,7 +181,7 @@ namespace otpqc::mpc::protocols {
 
             if (party.get_id() == 1) {
                 for (int i = 2; i <= QST_NUM_OF_MPC_PARTIES; i++) {
-                    char v_shares_bits_string[512]; //todo Optimize this with bits to bytes and bytes to bits
+                    char v_shares_bits_string[512];
                     int v_shares_bits_string_length;
 
                     io->recv_data(i, &v_shares_bits_string_length, sizeof(int));
