@@ -1,0 +1,85 @@
+`timescale 1ns / 1ps
+
+/////////////////////////////////////////////////////////////////
+//                 Testbench: Dilithium Decomposition          //
+/////////////////////////////////////////////////////////////////
+// Description:                                                //
+//   This testbench verifies the functionality of the          //
+//   dilithium2_decompose and dilithium35_decompose modules.   //
+//   Both modules decompose a 23-bit input 'a' into a high     //
+//   part (a1) and a low part (a0), following the Dilithium    //
+//   lattice-based signature specification.                    //
+//                                                             //
+// Inputs:                                                     //
+//   - a   : 23-bit coefficient input to be decomposed.        //
+//                                                             //
+// Outputs:                                                    //
+//   - r2   : 31-bit output from dilithium2_decompose          //
+//            • Format: {a1[7:0], a0[22:0]}                    //
+//   - r35  : 27-bit output from dilithium35_decompose         //
+//            • Format: {a1[3:0], a0[22:0]}                    //
+//                                                             //
+// Extracted Values:                                           //
+//   - a1_2  : Upper 8 bits of r2 (Dilithium2 high part)       //
+//   - a0_2  : Lower 23 bits of r2 (Dilithium2 low part)       //
+//   - a1_35 : Upper 4 bits of r35 (Dilithium35 high part)     //
+//   - a0_35 : Lower 23 bits of r35 (Dilithium35 low part)     //
+//                                                             //
+// Notes:                                                      //
+//   - Single test vector is applied for demonstration.        //
+//   - #10 time delay is used to simulate propagation.         //
+//                                                             //
+// Author: Kiarash Sedghi (kiarashs@usf.edu)                   //
+// Date  : June 2025                                           //
+/////////////////////////////////////////////////////////////////
+
+module decompose_dilithium_tb;
+
+    // 23-bit input to match module specs
+    reg [22:0] a;
+
+    // Outputs for dilithium2_decompose
+  	wire [28:0] r2;
+    wire [7:0]  a1_2;
+    wire [22:0] a0_2;
+
+    // Outputs for dilithium35_decompose
+    wire [26:0] r35;
+    wire [3:0]  a1_35;
+    wire [22:0] a0_35;
+
+    // Instantiate dilithium2_decompose
+    dilithium2_decompose uut2 (
+        .a(a),
+        .r(r2)
+    );
+
+  	assign a1_2 = r2[28:23];  // Upper 8 bits
+    assign a0_2 = r2[22:0];   // Lower 23 bits
+
+    // Instantiate dilithium35_decompose
+    dilithium35_decompose uut35 (
+        .a(a),
+        .r(r35)
+    );
+
+    assign a1_35 = r35[26:23];  // Upper 4 bits
+    assign a0_35 = r35[22:0];   // Lower 23 bits
+
+    initial begin
+        $display("=======================================================");
+        $display("   Starting Dilithium Decomposition Testbench          ");
+        $display("=======================================================");
+
+        // Test Vector
+        a = 23'd530260;
+        #10;
+        $display("Input a = %0d", a);
+        $display("dilithium2_decompose  -> a1 = %0d, a0 = %0d", a1_2, a0_2);
+        $display("dilithium35_decompose -> a1 = %0d, a0 = %0d", a1_35, a0_35);
+
+        $display("\nTestbench complete.");
+        $finish;
+    end
+
+endmodule
