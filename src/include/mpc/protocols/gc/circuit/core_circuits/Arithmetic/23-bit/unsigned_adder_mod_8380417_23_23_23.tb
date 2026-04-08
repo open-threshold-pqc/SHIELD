@@ -1,0 +1,48 @@
+`timescale 1ns / 1ps
+
+module Dilithium_modular_addition_tb;
+
+    reg  [22:0] a;
+    reg  [22:0] b;
+    wire [22:0] result;
+
+    // Instantiate the DUT (Device Under Test)
+    Dilithium_modular_addition dut (
+        .a(a),
+        .b(b),
+        .result(result)
+    );
+
+    initial begin
+        $display("Time\t\ta\t\tb\t\tresult");
+        $display("---------------------------------------------");
+
+        // Test 1: 1 + 1 = 2
+        a = 23'd1;
+        b = 23'd1;
+        #10 $display("%0t\t%d\t%d\t%d", $time, a, b, result);
+
+        // Test 2: (q - 1) + 1 = 0
+        a = 23'd8380416;
+        b = 23'd1;
+        #10 $display("%0t\t%d\t%d\t%d", $time, a, b, result);
+
+        // Test 3: (q - 10) + 20 = 10
+        a = 23'd8380407;
+        b = 23'd20;
+        #10 $display("%0t\t%d\t%d\t%d", $time, a, b, result);
+
+        // Test 4: random within bounds
+        a = 23'd4000000;
+        b = 23'd3000000;
+        #10 $display("%0t\t%d\t%d\t%d", $time, a, b, result);
+
+        // Test 5: edge case 0 + 0 = 0
+        a = 23'd0;
+        b = 23'd0;
+        #10 $display("%0t\t%d\t%d\t%d", $time, a, b, result);
+
+        $finish;
+    end
+
+endmodule
