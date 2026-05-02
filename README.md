@@ -242,7 +242,7 @@ SHIELD follows the **FIPS-204 specification** structure with threshold extension
 ### Bristol Circuit Generation
 
 Guidelines for generating Bristol circuits are provided in the companion project:  
-**[otpqcirc](https://github.com/open-threshold-pqc/otpqcirc)** - Tools and documentation for creating custom Bristol-format circuits
+**[SyntoYoCirc](https://github.com/open-threshold-pqc/syntyocirc)** - Tools and documentation for creating custom Bristol-format circuits
 
 ---
 
