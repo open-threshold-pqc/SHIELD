@@ -1,9 +1,1113 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>SHIELD</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SHIELD — Post-Quantum Threshold ML-DSA</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;0,9..144,700;1,9..144,400&family=JetBrains+Mono:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0d12;
+    --bg-elev: #11161e;
+    --bg-grid: #0d1218;
+    --ink: #e8ecf2;
+    --ink-dim: #8a94a3;
+    --ink-faint: #4a5260;
+    --accent: #6df0c8;
+    --accent-glow: rgba(109, 240, 200, 0.15);
+    --warn: #ffb547;
+    --line: #1f2731;
+    --line-bright: #2a3441;
+    --serif: 'Fraunces', 'Times New Roman', serif;
+    --mono: 'JetBrains Mono', 'Courier New', monospace;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--serif);
+    font-weight: 300;
+    line-height: 1.6;
+    overflow-x: hidden;
+    background-image:
+      radial-gradient(ellipse at top left, rgba(109, 240, 200, 0.04) 0%, transparent 50%),
+      radial-gradient(ellipse at bottom right, rgba(80, 120, 200, 0.04) 0%, transparent 50%);
+    background-attachment: fixed;
+  }
+
+  /* Subtle grid background */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(var(--bg-grid) 1px, transparent 1px),
+      linear-gradient(90deg, var(--bg-grid) 1px, transparent 1px);
+    background-size: 60px 60px;
+    opacity: 0.4;
+    pointer-events: none;
+    z-index: 0;
+    mask-image: radial-gradient(ellipse at center, black 0%, transparent 80%);
+  }
+
+  /* Noise texture */
+  body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.4'/%3E%3C/svg%3E");
+    opacity: 0.04;
+    pointer-events: none;
+    z-index: 1;
+    mix-blend-mode: overlay;
+  }
+
+  .container { max-width: 1280px; margin: 0 auto; padding: 0 2rem; position: relative; z-index: 2; }
+
+  /* ===== NAV ===== */
+  nav {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    backdrop-filter: blur(20px);
+    background: rgba(10, 13, 18, 0.7);
+    border-bottom: 1px solid var(--line);
+    z-index: 100;
+    padding: 1rem 0;
+  }
+  nav .container { display: flex; justify-content: space-between; align-items: center; }
+  .logo {
+    font-family: var(--mono);
+    font-weight: 600;
+    font-size: 0.95rem;
+    letter-spacing: 0.15em;
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+  }
+  .logo-mark {
+    width: 14px; height: 14px;
+    background: var(--accent);
+    transform: rotate(45deg);
+    box-shadow: 0 0 20px var(--accent-glow);
+    position: relative;
+  }
+  .logo-mark::after {
+    content: '';
+    position: absolute;
+    inset: 3px;
+    background: var(--bg);
+  }
+  .nav-links { display: flex; gap: 2.5rem; font-family: var(--mono); font-size: 0.8rem; letter-spacing: 0.08em; }
+  .nav-links a {
+    color: var(--ink-dim);
+    text-decoration: none;
+    transition: color 0.2s;
+    position: relative;
+  }
+  .nav-links a:hover { color: var(--accent); }
+  .nav-cta {
+    font-family: var(--mono);
+    font-size: 0.8rem;
+    letter-spacing: 0.08em;
+    color: var(--bg);
+    background: var(--accent);
+    padding: 0.6rem 1.2rem;
+    text-decoration: none;
+    transition: all 0.2s;
+    border: 1px solid var(--accent);
+  }
+  .nav-cta:hover { background: transparent; color: var(--accent); }
+  @media (max-width: 768px) { .nav-links { display: none; } }
+
+  /* ===== HERO ===== */
+  .hero {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    padding: 8rem 0 4rem;
+    position: relative;
+  }
+  .hero-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4rem;
+    align-items: center;
+  }
+  @media (max-width: 968px) { .hero-grid { grid-template-columns: 1fr; gap: 3rem; } }
+
+  .hero-meta {
+    font-family: var(--mono);
+    font-size: 0.78rem;
+    letter-spacing: 0.2em;
+    color: var(--accent);
+    margin-bottom: 2rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    opacity: 0;
+    animation: fadeUp 0.8s ease-out 0.2s forwards;
+  }
+  .hero-meta::before {
+    content: '';
+    width: 32px; height: 1px;
+    background: var(--accent);
+  }
+
+  h1 {
+    font-family: var(--serif);
+    font-weight: 300;
+    font-size: clamp(3rem, 7vw, 6rem);
+    line-height: 0.95;
+    letter-spacing: -0.02em;
+    margin-bottom: 2rem;
+    opacity: 0;
+    animation: fadeUp 0.9s ease-out 0.4s forwards;
+  }
+  h1 em {
+    font-style: italic;
+    font-weight: 400;
+    color: var(--accent);
+    position: relative;
+  }
+  h1 .strike {
+    position: relative;
+    display: inline-block;
+  }
+  h1 .strike::after {
+    content: '';
+    position: absolute;
+    left: -2%; right: -2%;
+    top: 52%;
+    height: 2px;
+    background: var(--accent);
+    transform: scaleX(0);
+    transform-origin: left;
+    animation: strike 1s ease-out 1.6s forwards;
+  }
+
+  .hero-tagline {
+    font-size: 1.15rem;
+    color: var(--ink-dim);
+    max-width: 520px;
+    margin-bottom: 2.5rem;
+    line-height: 1.7;
+    opacity: 0;
+    animation: fadeUp 0.9s ease-out 0.6s forwards;
+  }
+  .hero-tagline strong { color: var(--ink); font-weight: 400; }
+
+  .hero-cta-row {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+    opacity: 0;
+    animation: fadeUp 0.9s ease-out 0.8s forwards;
+  }
+  .btn {
+    font-family: var(--mono);
+    font-size: 0.85rem;
+    letter-spacing: 0.1em;
+    padding: 1rem 1.8rem;
+    text-decoration: none;
+    transition: all 0.25s;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    border: 1px solid;
+  }
+  .btn-primary {
+    background: var(--accent);
+    color: var(--bg);
+    border-color: var(--accent);
+  }
+  .btn-primary:hover {
+    background: transparent;
+    color: var(--accent);
+    box-shadow: 0 0 30px var(--accent-glow);
+  }
+  .btn-ghost {
+    background: transparent;
+    color: var(--ink);
+    border-color: var(--line-bright);
+  }
+  .btn-ghost:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+  .btn .arrow { transition: transform 0.25s; }
+  .btn:hover .arrow { transform: translateX(4px); }
+
+  /* Hero visual: animated lattice/cipher block */
+  .hero-visual {
+    position: relative;
+    aspect-ratio: 1;
+    max-width: 520px;
+    margin-left: auto;
+    opacity: 0;
+    animation: fadeIn 1.2s ease-out 0.6s forwards;
+  }
+  .lattice-frame {
+    position: absolute;
+    inset: 0;
+    border: 1px solid var(--line-bright);
+    overflow: hidden;
+  }
+  .lattice-frame::before {
+    content: 'FIPS-204 / ML-DSA';
+    position: absolute;
+    top: 1rem; left: 1rem;
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.15em;
+    color: var(--ink-faint);
+  }
+  .lattice-frame::after {
+    content: '◎ THRESHOLD-MPC';
+    position: absolute;
+    bottom: 1rem; right: 1rem;
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.15em;
+    color: var(--accent);
+  }
+
+  .lattice-corners span {
+    position: absolute;
+    width: 12px; height: 12px;
+    border: 1px solid var(--accent);
+  }
+  .lattice-corners span:nth-child(1) { top: -1px; left: -1px; border-right: none; border-bottom: none; }
+  .lattice-corners span:nth-child(2) { top: -1px; right: -1px; border-left: none; border-bottom: none; }
+  .lattice-corners span:nth-child(3) { bottom: -1px; left: -1px; border-right: none; border-top: none; }
+  .lattice-corners span:nth-child(4) { bottom: -1px; right: -1px; border-left: none; border-top: none; }
+
+  .lattice-svg {
+    position: absolute;
+    inset: 15%;
+    width: 70%; height: 70%;
+  }
+  .node {
+    fill: var(--accent);
+    animation: pulse 3s ease-in-out infinite;
+  }
+  .node:nth-child(2) { animation-delay: 0.3s; }
+  .node:nth-child(3) { animation-delay: 0.6s; }
+  .node:nth-child(4) { animation-delay: 0.9s; }
+  .node:nth-child(5) { animation-delay: 1.2s; }
+  .edge {
+    stroke: var(--accent);
+    stroke-width: 0.8;
+    fill: none;
+    opacity: 0.3;
+    stroke-dasharray: 4 4;
+    animation: dash 8s linear infinite;
+  }
+  .ring {
+    stroke: var(--accent);
+    fill: none;
+    opacity: 0.15;
+    transform-origin: center;
+    animation: rotate 30s linear infinite;
+  }
+  .ring-2 { animation-direction: reverse; animation-duration: 45s; }
+
+  /* Scrolling code lines around */
+  .hero-cipher {
+    position: absolute;
+    bottom: -2rem;
+    left: 0; right: 0;
+    font-family: var(--mono);
+    font-size: 0.65rem;
+    color: var(--ink-faint);
+    overflow: hidden;
+    white-space: nowrap;
+    opacity: 0.6;
+  }
+  .cipher-track {
+    display: inline-block;
+    animation: scroll-cipher 40s linear infinite;
+  }
+
+  /* ===== STATUS STRIP ===== */
+  .status-strip {
+    border-top: 1px solid var(--line);
+    border-bottom: 1px solid var(--line);
+    padding: 1.5rem 0;
+    background: var(--bg-elev);
+    overflow: hidden;
+  }
+  .status-strip .container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 2rem;
+    flex-wrap: wrap;
+    font-family: var(--mono);
+    font-size: 0.8rem;
+    letter-spacing: 0.1em;
+  }
+  .status-item { color: var(--ink-dim); display: flex; align-items: center; gap: 0.6rem; }
+  .status-item strong { color: var(--ink); font-weight: 500; }
+  .live-dot {
+    width: 8px; height: 8px;
+    background: var(--accent);
+    border-radius: 50%;
+    box-shadow: 0 0 12px var(--accent);
+    animation: pulse-dot 2s ease-in-out infinite;
+  }
+
+  /* ===== SECTIONS ===== */
+  section { padding: 7rem 0; position: relative; }
+
+  .section-label {
+    font-family: var(--mono);
+    font-size: 0.78rem;
+    letter-spacing: 0.2em;
+    color: var(--accent);
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+  .section-label::before { content: '§'; opacity: 0.7; }
+
+  h2 {
+    font-family: var(--serif);
+    font-weight: 300;
+    font-size: clamp(2rem, 4.5vw, 3.5rem);
+    line-height: 1.05;
+    letter-spacing: -0.02em;
+    margin-bottom: 1.5rem;
+    max-width: 900px;
+  }
+  h2 em { font-style: italic; color: var(--accent); }
+
+  .section-intro {
+    font-size: 1.1rem;
+    color: var(--ink-dim);
+    max-width: 680px;
+    margin-bottom: 4rem;
+    line-height: 1.7;
+  }
+
+  /* ===== WHAT IS ===== */
+  .what-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 5rem;
+    align-items: start;
+  }
+  @media (max-width: 968px) { .what-grid { grid-template-columns: 1fr; gap: 3rem; } }
+
+  .what-grid p {
+    color: var(--ink-dim);
+    font-size: 1.05rem;
+    margin-bottom: 1.5rem;
+    line-height: 1.8;
+  }
+  .what-grid p strong { color: var(--ink); font-weight: 400; }
+
+  .key-points {
+    list-style: none;
+    border-top: 1px solid var(--line);
+  }
+  .key-points li {
+    padding: 1.5rem 0;
+    border-bottom: 1px solid var(--line);
+    display: grid;
+    grid-template-columns: 32px 1fr;
+    gap: 1.5rem;
+    align-items: start;
+  }
+  .kp-icon {
+    font-family: var(--mono);
+    color: var(--accent);
+    font-size: 0.9rem;
+    padding-top: 2px;
+  }
+  .kp-content h4 {
+    font-family: var(--serif);
+    font-weight: 400;
+    font-size: 1.15rem;
+    margin-bottom: 0.4rem;
+  }
+  .kp-content p {
+    font-size: 0.95rem;
+    color: var(--ink-dim);
+    margin: 0;
+    line-height: 1.6;
+  }
+
+  /* ===== FEATURES ===== */
+  .features-section { background: var(--bg-elev); border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+  .feature-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0;
+    border: 1px solid var(--line);
+  }
+  @media (max-width: 968px) { .feature-grid { grid-template-columns: 1fr; } }
+
+  .feature {
+    padding: 2.5rem;
+    border-right: 1px solid var(--line);
+    border-bottom: 1px solid var(--line);
+    transition: background 0.3s;
+    position: relative;
+  }
+  .feature:hover { background: var(--bg); }
+  .feature:hover .feature-num { color: var(--accent); }
+  .feature:nth-child(3n) { border-right: none; }
+  .feature:nth-last-child(-n+3) { border-bottom: none; }
+  @media (max-width: 968px) {
+    .feature { border-right: none; }
+    .feature:nth-last-child(-n+3) { border-bottom: 1px solid var(--line); }
+    .feature:last-child { border-bottom: none; }
+  }
+
+  .feature-num {
+    font-family: var(--mono);
+    font-size: 0.75rem;
+    letter-spacing: 0.15em;
+    color: var(--ink-faint);
+    margin-bottom: 1.5rem;
+    transition: color 0.3s;
+  }
+  .feature h3 {
+    font-family: var(--serif);
+    font-weight: 400;
+    font-size: 1.4rem;
+    margin-bottom: 0.8rem;
+    line-height: 1.2;
+  }
+  .feature p {
+    color: var(--ink-dim);
+    font-size: 0.95rem;
+    line-height: 1.6;
+  }
+
+  /* ===== ARCHITECTURE / CODE ===== */
+  .arch-grid {
+    display: grid;
+    grid-template-columns: 5fr 7fr;
+    gap: 4rem;
+    align-items: start;
+  }
+  @media (max-width: 968px) { .arch-grid { grid-template-columns: 1fr; } }
+
+  .arch-text p {
+    color: var(--ink-dim);
+    font-size: 1.05rem;
+    line-height: 1.8;
+    margin-bottom: 1.5rem;
+  }
+  .protocol-table {
+    margin-top: 2rem;
+    border-top: 1px solid var(--line-bright);
+  }
+  .protocol-table > div {
+    display: grid;
+    grid-template-columns: 140px 1fr;
+    padding: 1rem 0;
+    border-bottom: 1px solid var(--line);
+    font-family: var(--mono);
+    font-size: 0.85rem;
+  }
+  .protocol-table .pt-key { color: var(--accent); letter-spacing: 0.05em; }
+  .protocol-table .pt-val { color: var(--ink-dim); }
+
+  .terminal {
+    background: #060810;
+    border: 1px solid var(--line-bright);
+    font-family: var(--mono);
+    font-size: 0.82rem;
+    line-height: 1.65;
+    overflow: hidden;
+    box-shadow: 0 30px 80px rgba(0,0,0,0.4);
+  }
+  .terminal-bar {
+    background: var(--bg-elev);
+    padding: 0.8rem 1.2rem;
+    border-bottom: 1px solid var(--line);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.72rem;
+    color: var(--ink-faint);
+    letter-spacing: 0.1em;
+  }
+  .terminal-bar .dots { display: flex; gap: 6px; margin-right: 1rem; }
+  .terminal-bar .dots span {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    background: var(--line-bright);
+  }
+  .terminal-bar .dots span:first-child { background: #ff5f57; }
+  .terminal-bar .dots span:nth-child(2) { background: #febc2e; }
+  .terminal-bar .dots span:nth-child(3) { background: #28c840; }
+  .terminal-body { padding: 1.5rem; color: var(--ink); overflow-x: auto; }
+  .terminal-body pre { margin: 0; }
+  .term-prompt { color: var(--accent); }
+  .term-comment { color: var(--ink-faint); font-style: italic; }
+  .term-flag { color: var(--warn); }
+  .term-output { color: var(--ink-dim); }
+  .term-success { color: var(--accent); }
+
+  /* ===== USE CASES ===== */
+  .uc-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.5rem;
+  }
+  @media (max-width: 768px) { .uc-grid { grid-template-columns: 1fr; } }
+  .uc-card {
+    border: 1px solid var(--line);
+    padding: 2rem;
+    transition: all 0.3s;
+    background: var(--bg-elev);
+  }
+  .uc-card:hover {
+    border-color: var(--accent);
+    transform: translateY(-2px);
+  }
+  .uc-card h4 {
+    font-family: var(--serif);
+    font-weight: 400;
+    font-size: 1.3rem;
+    margin-bottom: 0.8rem;
+  }
+  .uc-card p { color: var(--ink-dim); font-size: 0.95rem; line-height: 1.6; }
+  .uc-tag {
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.15em;
+    color: var(--accent);
+    margin-bottom: 1rem;
+    display: block;
+  }
+
+  /* ===== CITATION ===== */
+  .citation-section { background: var(--bg-elev); border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+  .paper-card {
+    border: 1px solid var(--line-bright);
+    padding: 3rem;
+    background: var(--bg);
+    position: relative;
+  }
+  .paper-card::before {
+    content: 'IEEE S&P 2026';
+    position: absolute;
+    top: -10px; left: 2rem;
+    background: var(--bg);
+    padding: 0 1rem;
+    font-family: var(--mono);
+    font-size: 0.75rem;
+    letter-spacing: 0.2em;
+    color: var(--accent);
+  }
+  .paper-title {
+    font-family: var(--serif);
+    font-weight: 400;
+    font-style: italic;
+    font-size: 1.5rem;
+    line-height: 1.3;
+    margin-bottom: 1rem;
+  }
+  .paper-authors {
+    color: var(--ink-dim);
+    font-size: 0.95rem;
+    margin-bottom: 2rem;
+  }
+  .bibtex {
+    background: #060810;
+    border: 1px solid var(--line);
+    padding: 1.5rem;
+    font-family: var(--mono);
+    font-size: 0.78rem;
+    line-height: 1.7;
+    color: var(--ink-dim);
+    overflow-x: auto;
+  }
+  .bibtex .b-key { color: var(--accent); }
+  .bibtex .b-str { color: var(--warn); }
+
+  /* ===== FOOTER ===== */
+  footer {
+    border-top: 1px solid var(--line);
+    padding: 4rem 0 2rem;
+    background: var(--bg);
+  }
+  .footer-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr 1fr;
+    gap: 3rem;
+    margin-bottom: 3rem;
+  }
+  @media (max-width: 768px) { .footer-grid { grid-template-columns: 1fr 1fr; } }
+  .footer-brand p {
+    color: var(--ink-dim);
+    font-size: 0.9rem;
+    margin-top: 1rem;
+    max-width: 320px;
+    line-height: 1.6;
+  }
+  .footer-col h5 {
+    font-family: var(--mono);
+    font-size: 0.75rem;
+    letter-spacing: 0.2em;
+    color: var(--accent);
+    margin-bottom: 1.2rem;
+    text-transform: uppercase;
+  }
+  .footer-col a {
+    display: block;
+    color: var(--ink-dim);
+    text-decoration: none;
+    padding: 0.4rem 0;
+    font-size: 0.9rem;
+    transition: color 0.2s;
+  }
+  .footer-col a:hover { color: var(--accent); }
+  .footer-bottom {
+    border-top: 1px solid var(--line);
+    padding-top: 2rem;
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 1rem;
+    font-family: var(--mono);
+    font-size: 0.75rem;
+    letter-spacing: 0.1em;
+    color: var(--ink-faint);
+  }
+
+  /* ===== ANIMATIONS ===== */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+  @keyframes strike {
+    to { transform: scaleX(1); }
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; r: 4; }
+    50% { opacity: 0.4; r: 6; }
+  }
+  @keyframes pulse-dot {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
+  }
+  @keyframes dash {
+    to { stroke-dashoffset: -100; }
+  }
+  @keyframes rotate {
+    to { transform: rotate(360deg); }
+  }
+  @keyframes scroll-cipher {
+    from { transform: translateX(0); }
+    to { transform: translateX(-50%); }
+  }
+
+  /* Scroll reveal */
+  .reveal {
+    opacity: 0;
+    transform: translateY(30px);
+    transition: opacity 0.9s ease-out, transform 0.9s ease-out;
+  }
+  .reveal.in { opacity: 1; transform: translateY(0); }
+</style>
 </head>
 <body>
-  <h1>Welcome to SHIELD</h1>
+
+<nav>
+  <div class="container">
+    <div class="logo">
+      <div class="logo-mark"></div>
+      SHIELD
+    </div>
+    <div class="nav-links">
+      <a href="#what">Overview</a>
+      <a href="#features">Features</a>
+      <a href="#architecture">Architecture</a>
+      <a href="#research">Research</a>
+    </div>
+    <a href="https://github.com/open-threshold-pqc/SHIELD" class="nav-cta">VIEW ON GITHUB ↗</a>
+  </div>
+</nav>
+
+<!-- ============ HERO ============ -->
+<header class="hero">
+  <div class="container">
+    <div class="hero-grid">
+      <div>
+        <div class="hero-meta">NIST FIPS-204 · IEEE S&P 2026 · MIT LICENSE</div>
+        <h1>
+          Threshold trust,<br>
+          for the <em>post-quantum</em><br>
+          <span class="strike">era.</span>
+        </h1>
+        <p class="hero-tagline">
+          <strong>SHIELD</strong> is a fully NIST-compliant threshold ML-DSA implementation built on secure multi-party computation. Distribute private keys across parties, eliminate single points of compromise, and stay quantum-resistant.
+        </p>
+        <div class="hero-cta-row">
+          <a href="#quickstart" class="btn btn-primary">QUICK START <span class="arrow">→</span></a>
+          <a href="#research" class="btn btn-ghost">READ THE PAPER <span class="arrow">→</span></a>
+        </div>
+      </div>
+
+      <div class="hero-visual">
+        <div class="lattice-frame">
+          <div class="lattice-corners"><span></span><span></span><span></span><span></span></div>
+          <svg class="lattice-svg" viewBox="0 0 200 200">
+            <!-- decorative rings -->
+            <circle class="ring" cx="100" cy="100" r="90" stroke-width="0.5" stroke-dasharray="2 4"/>
+            <circle class="ring ring-2" cx="100" cy="100" r="70" stroke-width="0.5" stroke-dasharray="6 3"/>
+            <circle class="ring" cx="100" cy="100" r="50" stroke-width="0.4" stroke-dasharray="1 5"/>
+
+            <!-- pentagon party network -->
+            <polygon points="100,30 165,75 140,150 60,150 35,75"
+                     stroke="var(--accent)" fill="none" opacity="0.2" stroke-width="0.6"/>
+
+            <!-- edges -->
+            <line class="edge" x1="100" y1="30" x2="140" y2="150"/>
+            <line class="edge" x1="100" y1="30" x2="60" y2="150"/>
+            <line class="edge" x1="165" y1="75" x2="60" y2="150"/>
+            <line class="edge" x1="35" y1="75" x2="140" y2="150"/>
+            <line class="edge" x1="35" y1="75" x2="165" y2="75"/>
+
+            <!-- center node -->
+            <circle cx="100" cy="100" r="8" fill="none" stroke="var(--accent)" stroke-width="0.8" opacity="0.8"/>
+            <circle cx="100" cy="100" r="3" fill="var(--accent)"/>
+
+            <!-- nodes -->
+            <circle class="node" cx="100" cy="30" r="4"/>
+            <circle class="node" cx="165" cy="75" r="4"/>
+            <circle class="node" cx="140" cy="150" r="4"/>
+            <circle class="node" cx="60" cy="150" r="4"/>
+            <circle class="node" cx="35" cy="75" r="4"/>
+
+            <!-- party labels -->
+            <text x="100" y="22" text-anchor="middle" font-family="JetBrains Mono" font-size="5" fill="var(--ink-dim)" letter-spacing="0.5">P1</text>
+            <text x="172" y="73" font-family="JetBrains Mono" font-size="5" fill="var(--ink-dim)">P2</text>
+            <text x="146" y="160" font-family="JetBrains Mono" font-size="5" fill="var(--ink-dim)">P3</text>
+            <text x="48" y="160" text-anchor="end" font-family="JetBrains Mono" font-size="5" fill="var(--ink-dim)">P4</text>
+            <text x="28" y="73" text-anchor="end" font-family="JetBrains Mono" font-size="5" fill="var(--ink-dim)">P5</text>
+          </svg>
+        </div>
+        <div class="hero-cipher">
+          <div class="cipher-track">
+            0xa3f7 ░ MOD 8380417 ░ SPDZ ▸ WRK17 ░ ML-DSA-87 ░ Q=2^23-2^13+1 ░ KECCAK ░ NTT ░ FIPS-204 ░ BRISTOL ░&nbsp;
+            0xa3f7 ░ MOD 8380417 ░ SPDZ ▸ WRK17 ░ ML-DSA-87 ░ Q=2^23-2^13+1 ░ KECCAK ░ NTT ░ FIPS-204 ░ BRISTOL ░&nbsp;
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- ============ STATUS STRIP ============ -->
+<div class="status-strip">
+  <div class="container">
+    <div class="status-item"><span class="live-dot"></span><strong>Status:</strong>&nbsp;Research Prototype</div>
+    <div class="status-item"><strong>Parties:</strong>&nbsp;2 — 5 configurable</div>
+    <div class="status-item"><strong>Modes:</strong>&nbsp;ML-DSA 2 / 3 / 5</div>
+    <div class="status-item"><strong>Standard:</strong>&nbsp;NIST FIPS-204</div>
+    <div class="status-item"><strong>License:</strong>&nbsp;MIT</div>
+  </div>
+</div>
+
+<!-- ============ WHAT IS ============ -->
+<section id="what">
+  <div class="container">
+    <div class="reveal">
+      <div class="section-label">01 — OVERVIEW</div>
+      <h2>What is <em>Threshold ML-DSA?</em></h2>
+    </div>
+
+    <div class="what-grid">
+      <div class="reveal">
+        <p>
+          <strong>ML-DSA</strong> — formerly Dilithium — is one of NIST's standardized post-quantum digital signature algorithms. SHIELD extends it with threshold cryptography: a single private key never exists in one place.
+        </p>
+        <p>
+          Instead, key shares are distributed across multiple parties who must cooperate to produce a signature. The result is quantum-resistant security <em>and</em> distributed trust — no single party can sign alone, and no single point of compromise can forge.
+        </p>
+        <p>
+          Built on EMP-toolkit with hybrid SPDZ + WRK17 protocols and Bristol-format circuits, SHIELD is a research-grade reference for federal PKI and enterprise certificate authorities preparing for the post-quantum transition.
+        </p>
+      </div>
+
+      <ul class="key-points reveal">
+        <li>
+          <span class="kp-icon">[01]</span>
+          <div class="kp-content">
+            <h4>Distributed key generation</h4>
+            <p>Private keys are split across parties from the moment of creation. No single machine ever holds the full secret.</p>
+          </div>
+        </li>
+        <li>
+          <span class="kp-icon">[02]</span>
+          <div class="kp-content">
+            <h4>Cooperative signing</h4>
+            <p>Signatures require a threshold of parties to participate. Compromise of any single share leaks nothing.</p>
+          </div>
+        </li>
+        <li>
+          <span class="kp-icon">[03]</span>
+          <div class="kp-content">
+            <h4>Quantum-resistant</h4>
+            <p>Built on lattice-based ML-DSA, secure against both classical and quantum cryptanalysis.</p>
+          </div>
+        </li>
+        <li>
+          <span class="kp-icon">[04]</span>
+          <div class="kp-content">
+            <h4>Federal PKI ready</h4>
+            <p>FIPS-204 compliant, designed for government and enterprise certificate authority deployment.</p>
+          </div>
+        </li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FEATURES ============ -->
+<section id="features" class="features-section">
+  <div class="container">
+    <div class="reveal">
+      <div class="section-label">02 — CAPABILITIES</div>
+      <h2>Engineered for <em>real deployment.</em></h2>
+      <p class="section-intro">Six pillars from the standardized NIST primitive down to SIMD-accelerated arithmetic.</p>
+    </div>
+
+    <div class="feature-grid reveal">
+      <div class="feature">
+        <div class="feature-num">F / 01</div>
+        <h3>FIPS-204 Compliance</h3>
+        <p>Faithful to the NIST post-quantum standard, with threshold extensions layered on top of certified primitives.</p>
+      </div>
+      <div class="feature">
+        <div class="feature-num">F / 02</div>
+        <h3>Hybrid MPC Protocols</h3>
+        <p>SPDZ for arithmetic over the ML-DSA prime field, WRK17 for Boolean circuits — the right tool per operation.</p>
+      </div>
+      <div class="feature">
+        <div class="feature-num">F / 03</div>
+        <h3>Configurable Parties</h3>
+        <p>Run with 2–5 parties at any of the three NIST security levels. Tune the threshold to your trust model.</p>
+      </div>
+      <div class="feature">
+        <div class="feature-num">F / 04</div>
+        <h3>SIMD Acceleration</h3>
+        <p>SSE4.1, AVX, AVX2, and AES-NI extensions are leveraged where available for hot paths.</p>
+      </div>
+      <div class="feature">
+        <div class="feature-num">F / 05</div>
+        <h3>GMP Arithmetic</h3>
+        <p>Backed by GNU Multiple Precision for the large-number operations lattice cryptography demands.</p>
+      </div>
+      <div class="feature">
+        <div class="feature-num">F / 06</div>
+        <h3>Bristol Circuits</h3>
+        <p>Standard Bristol-format circuit support, with companion tooling (SyntoYoCirc) for custom circuit synthesis.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ ARCHITECTURE ============ -->
+<section id="architecture">
+  <div class="container">
+    <div class="reveal">
+      <div class="section-label">03 — ARCHITECTURE</div>
+      <h2>Hybrid MPC, <em>built to spec.</em></h2>
+    </div>
+
+    <div class="arch-grid">
+      <div class="arch-text reveal">
+        <p>
+          SHIELD layers a distributed signing protocol on top of the FIPS-204 ML-DSA primitive. Modular arithmetic over the prime <span style="font-family:var(--mono);color:var(--accent)">q = 2²³ − 2¹³ + 1</span> is handled by the SPDZ protocol; bit-level operations such as rejection sampling and hashing are evaluated as WRK17 Boolean circuits.
+        </p>
+        <p>
+          All threshold-specific code lives under <span style="font-family:var(--mono);color:var(--accent)">src/include/ml_dsa/threshold/</span>, prefixed <span style="font-family:var(--mono);color:var(--accent)">threshold_*</span>. The standard verification function is unmodified — verifiers don't need to know a signature was produced by a quorum.
+        </p>
+
+        <div class="protocol-table">
+          <div><span class="pt-key">primitive</span> <span class="pt-val">ML-DSA (Dilithium)</span></div>
+          <div><span class="pt-key">standard</span> <span class="pt-val">NIST FIPS-204</span></div>
+          <div><span class="pt-key">arithmetic</span> <span class="pt-val">SPDZ over Z_q</span></div>
+          <div><span class="pt-key">boolean</span> <span class="pt-val">WRK17 garbled circuits</span></div>
+          <div><span class="pt-key">framework</span> <span class="pt-val">EMP-toolkit</span></div>
+          <div><span class="pt-key">circuits</span> <span class="pt-val">Bristol format</span></div>
+          <div><span class="pt-key">large_int</span> <span class="pt-val">GNU GMP</span></div>
+        </div>
+      </div>
+
+      <div class="reveal" id="quickstart">
+        <div class="terminal">
+          <div class="terminal-bar">
+            <div class="dots"><span></span><span></span><span></span></div>
+            shield@build:~$ &nbsp;quickstart.sh
+          </div>
+          <div class="terminal-body">
+<pre><span class="term-comment"># Clone &amp; enter the repo</span>
+<span class="term-prompt">$</span> git clone https://github.com/open-threshold-pqc/SHIELD.git
+<span class="term-prompt">$</span> cd SHIELD &amp;&amp; mkdir build &amp;&amp; cd build
+
+<span class="term-comment"># Configure: 2 parties, security level 2</span>
+<span class="term-prompt">$</span> cmake --fresh .. \
+    <span class="term-flag">-DQST_NUM_OF_MPC_PARTIES</span>=2 \
+    <span class="term-flag">-DQST_ML_DSA_MODE</span>=2
+
+<span class="term-comment"># Build the threshold ML-DSA test</span>
+<span class="term-prompt">$</span> make -j$(nproc) test_threshold_ml_dsa
+
+<span class="term-comment"># Run it</span>
+<span class="term-prompt">$</span> ./out/test/test_threshold_ml_dsa
+
+<span class="term-output">[Threshold Dilithium Test]
+ - Parties      : 2
+ - Mode         : 2
+Preprocessing 5121 UNSIGNED_ADD_MOD_8380417 Circuits ...
+
+[Dilithium Parameter Summary]
+  CRYPTO_PUBLICKEYBYTES  = 1312
+  CRYPTO_SECRETKEYBYTES  = 2560
+  CRYPTO_BYTES           = 2420</span>
+
+<span class="term-success">✓ Threshold Dilithium test passed successfully!</span>
+</pre>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ USE CASES ============ -->
+<section style="padding-top:2rem;">
+  <div class="container">
+    <div class="reveal">
+      <div class="section-label">04 — APPLICATIONS</div>
+      <h2>Where threshold trust <em>matters most.</em></h2>
+    </div>
+
+    <div class="uc-grid reveal">
+      <div class="uc-card">
+        <span class="uc-tag">▸ GOVERNMENT</span>
+        <h4>Federal Public Key Infrastructure</h4>
+        <p>Distribute root and intermediate signing authority across agencies and HSMs. No single compromise — internal or external — can mint rogue certificates.</p>
+      </div>
+      <div class="uc-card">
+        <span class="uc-tag">▸ ENTERPRISE</span>
+        <h4>Certificate Authorities</h4>
+        <p>Replace single-key CAs with quorum-based signing. Audit, rotate, and recover without ever reconstructing a full secret key.</p>
+      </div>
+      <div class="uc-card">
+        <span class="uc-tag">▸ INFRASTRUCTURE</span>
+        <h4>Code &amp; Firmware Signing</h4>
+        <p>Require cooperation from security, release, and compliance teams before any production binary is signed. Quantum-safe out of the box.</p>
+      </div>
+      <div class="uc-card">
+        <span class="uc-tag">▸ RESEARCH</span>
+        <h4>Distributed Trust Systems</h4>
+        <p>A reference implementation for academic exploration of threshold lattice-based signatures, MPC optimization, and protocol analysis.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ CITATION ============ -->
+<section id="research" class="citation-section">
+  <div class="container">
+    <div class="reveal">
+      <div class="section-label">05 — RESEARCH</div>
+      <h2>Peer-reviewed at <em>IEEE S&P 2026.</em></h2>
+      <p class="section-intro">SHIELD is the reference implementation accompanying our forthcoming paper.</p>
+    </div>
+
+    <div class="paper-card reveal">
+      <p class="paper-title">A Full Threshold NIST PQC-Compliant Framework for Distributed Trust in Federal Public Key Infrastructure</p>
+      <p class="paper-authors">Sedghighadikolaei, K. · Sun, C. · Hoang, T. · Hamdaoui, B. · Yavuz, A. A. — <em>IEEE Symposium on Security and Privacy, 2026</em></p>
+
+      <div class="bibtex">
+<pre>@inproceedings{<span class="b-key">sedghi2026shield</span>,
+  title     = <span class="b-str">{A Full Threshold NIST PQC-Compliant Framework for
+              Distributed Trust in Federal Public Key Infrastructure}</span>,
+  author    = <span class="b-str">{Sedghighadikolaei, Kiarash and Sun, Changqi and
+              Hoang, Thang and Hamdaoui, Bechir and Yavuz, Attila A.}</span>,
+  booktitle = <span class="b-str">{Proceedings of the IEEE Symposium on Security and
+              Privacy (SP)}</span>,
+  year      = <span class="b-str">{2026}</span>
+}</pre>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FOOTER ============ -->
+<footer>
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <div class="logo">
+          <div class="logo-mark"></div>
+          SHIELD
+        </div>
+        <p>Secure NIST-compliant tHreshold post-quantum sIgnaturE for federaL PKI Digital-trust.</p>
+      </div>
+
+      <div class="footer-col">
+        <h5>Project</h5>
+        <a href="https://github.com/open-threshold-pqc/SHIELD">GitHub</a>
+        <a href="https://github.com/open-threshold-pqc/SHIELD/issues">Issues</a>
+        <a href="https://github.com/open-threshold-pqc/SHIELD/blob/main/LICENSE">License (MIT)</a>
+      </div>
+
+      <div class="footer-col">
+        <h5>Built On</h5>
+        <a href="https://github.com/emp-toolkit/emp-tool">EMP-toolkit</a>
+        <a href="https://csrc.nist.gov/pubs/fips/204/final">NIST FIPS-204</a>
+        <a href="#">SyntoYoCirc</a>
+      </div>
+
+      <div class="footer-col">
+        <h5>Related</h5>
+        <a href="https://csrc.nist.gov/projects/post-quantum-cryptography">NIST PQC</a>
+        <a href="https://github.com/open-quantum-safe/liboqs">liboqs</a>
+        <a href="https://github.com/PQClean/PQClean">PQClean</a>
+      </div>
+    </div>
+
+    <div class="footer-bottom">
+      <div>SHIELD · MIT LICENSE · © 2026</div>
+      <div>RESEARCH PROTOTYPE · NOT FOR PRODUCTION</div>
+    </div>
+  </div>
+</footer>
+
+<script>
+  // Scroll reveal
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('in');
+        observer.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.12, rootMargin: '0px 0px -60px 0px' });
+  document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+</script>
+
 </body>
 </html>
